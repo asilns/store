@@ -1,0 +1,13 @@
+Tables:
+  invoices: id, store_id, plan (basic, pro), number (unique invoce number), amount, status (paid, unpaid), pdf_url.
+  order_items: id, order_id, product_id, quantity, unit_cost, commission, profit.
+  orders: id, store_id, customer_id, status (draft, pending, shipping, completed, canceled), total_amount, total_profit.
+  products: id, store_id, name, price, cost, commission, status (active, inactive, )
+  shipments: id, store_id, order_id, carrier, status (created, label_generated, in_transit, delivered, canceled), tracking_number, external_id.
+  stores: id, name, plan (basic, pro), status (active, inactive, suspended).
+  subscriptions: id, store_id, plan (basic, pro), status (trial, active, past_due, grace_period, expired), start_date, end_date, grace_period_end.
+  user_store_map: id, user_id, store_id, role (owner, admin, manager, staff, viewer), name, email.
+  users: id, email, name, role (NULL for store users, super_admin - SaaS admin who manage store subscritions).
+
+Also all tables has created_at, updated_at.
+

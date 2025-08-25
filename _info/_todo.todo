@@ -1,0 +1,85 @@
+General notes:
+keep all possible CRUDs in nextjs server api/store/
+add multilanguage - english/arabic
+Add Zod validations with messages for page.tsx only not route. Messages also multilanguage.
+
+Supabase notes:
+SUpabas needs time to do CRUD/create data. And we know that .select and other operations right away after creatinon return null
+So need to do CRUD, wait and then do next operation.
+
+Frontend - go by flow:
+===
+  Seller /orders list + create/edit (items); persist commission/profit at write time.
+  Users can belong to multiple stores via user_store_map(user_id, store_id, role).
+  Roles: owner, admin, manager, staff, viewer with UI permissions + RLS (viewer = read-only).
+  Service-role keys server-only. API re-checks store context. Try to use Supabase on server components and better api/ routes
+  Orders today/7d/30d, GMV, profit per item (sale − unit cost).
+  Orders CRUD ().
+  API routes (shipments, export/import, invoice PDF, cron refresh)
+
+Seller Area - front and back:
+===
+  Orders CRUD (+ items). Persist on write:
+    unit_cost_cents, commission_cents = floor(price_cents * commission_bps / 10000), profit_cents = price_cents − unit_cost_cents.
+    orders, order_items
+
+  Products:
+    list, toggle active.
+    product variants (e.g., color, size) and product categories when adding products
+
+  Shipments:
+    ===
+      Create Shipments (carrier, status, tracking, label URL/external ID) via a pluggable provider. Webhook or polling (API docs provided).
+      Shipment created and status tracked for one provider.
+      
+  CSV:
+    export orders/products (store-scoped); import products with per-row validation report.
+
+
+Admin Area - front and back:
+===
+  Manage stores and manual subscriptions.
+  Admin can create/edit subscriptions; status updates immediately; cron updates daily.
+  Stores list/create/suspend/reactivate.
+  Manual subscriptions: plan, start/end, grace, renews; status updates immediately.
+  Admin edits take effect instantly.
+  Store details: #products, #users, orders(30d), GMV, profit, commission totals.
+  Invoices (HTML → PDF)
+  Print-ready HTML + PDF download (server function).
+  Sequential invoice # per store.
+  PDFs in Supabase Storage (private) with signed URLs.
+  Subscriptions & Daily Cron
+  Vercel Cron → POST /api/admin/refresh-subscriptions (protected) → DB rpc('refresh_subscriptions') using server-only service-role key.
+  Status: active/past_due/expired from ends_at + grace_days.
+
+  
+CSV:
+  CSV export (orders/products) scoped to store. Export/Import: CSV export for orders/products; products CSV import with validation.
+  Invoice (HTML only) with per-store sequential numbering.
+  Product CSV import returns per-row errors; exports remain store-scoped.
+  CSV import (products): server-side parse, per-row validation report, transactional upsert.
+  Invoices PDF: HTML→PDF (Playwright or puppeteer-core + @sparticuz/chromium), stored in Supabase Storage (private), signed URL download; Arabic PDF renders correctly.
+
+CI/CD:
+===
+  Cron:
+    Vercel Cron (daily job) - Daily API route flips subscription status (active/past_due/expired) based on dates + grace.
+    Cron stub endpoint: /api/admin/refresh-subscriptions.
+    Cron live: Vercel Cron scheduled daily; rpc('refresh_subscriptions') implemented.
+  
+  Git:
+    Add README (local setup, envs, seed, how to verify RLS isolation).
+  
+  Production:
+    Production deploy + runbook (deploy, envs, backups/export, add store, manage subs, import products, generate invoices, translations).
+
+New Features:
+Free trial signup for a new store
+Start free trial - creates store with trial start/end + limits, shows trial banner, auto-expires via cron.
+Collections for products and tags (e.g., “Perfume”)
+Product variants (size, color, custom) each with a price, selectable when adding/editing products
+
+Audit Log:
+Record who/when for create/update/delete on orders and products
+Low-stock alert
+Daily backup to Storage

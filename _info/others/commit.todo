@@ -1,0 +1,17 @@
+feat: store area
+
+Change types from camelCase to dash to match supabase.
+
+
+
+
+Prev:
+feat: initial UI for admin and seller dashboards
+feat: admin area
+feat: data schema and types
+feat: landing page
+feat: store area
+feat: deploy
+feat: multilanguage (arabic)
+feat: store and admin area
+
